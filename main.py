@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import random
-import config
+import settings
 
 intents = discord.Intents.default()
 intents.members = True
@@ -47,4 +47,4 @@ async def rr(ctx, *args):
     else: await ctx.send(message)
 
 
-bot.run(config.token)
+bot.run(settings.TOKEN)
