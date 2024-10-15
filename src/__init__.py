@@ -15,6 +15,10 @@ def main():
     async def on_ready():
         logger.info(f"Logged in as {bot.user.name} #{bot.user.discriminator}")
 
+        for cog in setup.COGS_DIR.glob("*.py"):
+            if cog.name != "__init__.py":
+                await bot.load_extension(f"cogs.{cog.name[:-3]}")
+
     bot.run(setup.TOKEN, root_logger=True)
 
 
