@@ -10,8 +10,8 @@ load_dotenv()
 TOKEN = os.getenv("TOKEN")
 
 BASE_DIR = pathlib.Path(__file__).parent
-
-CMDS_DIR = BASE_DIR / "src/cmds"
+SRC_DIR = BASE_DIR / "src"
+COGS_DIR = SRC_DIR / "cogs"
 
 LOGGING_CONFIG = {
     "version": 1,
