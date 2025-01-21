@@ -11,7 +11,14 @@ class Roll(commands.Cog):
         self.modifier = 0
 
     def parse(self, args: tuple):
-        return "".join(args).replace("+", " + ").replace("-", " - ").split()
+        return (
+            "".join(args)
+            .replace("+", " + ")
+            .replace("-", " - ")
+            .replace("adv", " adv ")
+            .replace("dis", " dis ")
+            .split()
+        )
 
     def output(self):
         if self.modifier == 0:
@@ -41,6 +48,34 @@ class Roll(commands.Cog):
                     else:
                         self.rolls.append(str(roll))
                     self.total = self.total + roll
+            elif "+" in arg or "-" in arg:
+                continue
+            else:
+                roll = int("".join([input[i - 1], input[i]]))
+                self.modifier = roll
+                self.total = self.total + roll
+
+        await ctx.send(self.output())
+        self.reset()
+
+    @commands.command()
+    async def rr(self, ctx, *args):
+        input = self.parse(args)
+
+        for i, arg in enumerate(input):
+            if "adv" in arg or "dis" in arg:
+                temp_rolls = []
+                temp_rolls.append(random.randint(1, 20))
+                temp_rolls.append(random.randint(1, 20))
+                if "adv" in arg:
+                    self.total = self.total + max(temp_rolls)
+                elif "dis" in arg:
+                    self.total = self.total + min(temp_rolls)
+                for i in range(2):
+                    if temp_rolls[i] == 20:
+                        self.rolls.append(f"**{str(temp_rolls[i])}**")
+                    else:
+                        self.rolls.append(str(temp_rolls[i]))
             elif "+" in arg or "-" in arg:
                 continue
             else:
