@@ -20,11 +20,18 @@ class Roll(commands.Cog):
             .split()
         )
 
-    def output(self):
+    def output(self, natural20=False, natural1=False):
+        output = ""
         if self.modifier == 0:
-            return f"**Rolls:** [ {', '.join(self.rolls)} ]\n**Total:** {self.total}"
+            output = f"**Rolls:** [ {', '.join(self.rolls)} ]\n**Total:** {self.total}"
         else:
-            return f"**Rolls:** [ {', '.join(self.rolls)} ] {self.modifier:=+4}\n**Total:** {self.total}"
+            output = f"**Rolls:** [ {', '.join(self.rolls)} ] {self.modifier:=+3}\n**Total:** {self.total}"
+        if natural20:
+            output = output + "\n**Natural 20!**"
+        elif natural1:
+            output = output + "\n**You're Fucked**"
+
+        return output
 
     def reset(self):
         self.rolls = []
@@ -58,32 +65,49 @@ class Roll(commands.Cog):
         await ctx.send(self.output())
         self.reset()
 
-    @commands.command()
-    async def rr(self, ctx, *args):
-        input = self.parse(args)
+    def d20(self, input):
+        dice = [random.randint(1, 20)]
+        total = dice[0]
+        modifier = 0
 
         for i, arg in enumerate(input):
-            if "adv" in arg or "dis" in arg:
-                temp_rolls = []
-                temp_rolls.append(random.randint(1, 20))
-                temp_rolls.append(random.randint(1, 20))
-                if "adv" in arg:
-                    self.total = self.total + max(temp_rolls)
-                elif "dis" in arg:
-                    self.total = self.total + min(temp_rolls)
-                for i in range(2):
-                    if temp_rolls[i] == 20:
-                        self.rolls.append(f"**{str(temp_rolls[i])}**")
-                    else:
-                        self.rolls.append(str(temp_rolls[i]))
+            if "adv" in arg:
+                dice.append(random.randint(1, 20))
+                total = max(dice) + modifier
+            elif "dis" in arg:
+                dice.append(random.randint(1, 20))
+                total = min(dice) + modifier
             elif "+" in arg or "-" in arg:
                 continue
             else:
-                roll = int("".join([input[i - 1], input[i]]))
-                self.modifier = roll
-                self.total = self.total + roll
+                modifier = int("".join([input[i - 1], input[i]]))
+                total = total + modifier
 
-        await ctx.send(self.output())
+        return [dice, modifier, total]
+
+    @commands.command()
+    async def rr(self, ctx, *args):
+        rolls = self.d20(self.parse(args))
+        natural20 = False
+        natural1 = False
+
+        for i, arg in enumerate(rolls):
+            if i == 0:
+                for _, roll in enumerate(arg):
+                    if roll == 20:
+                        self.rolls.append(f"**{str(roll)}**")
+                        natural20 = True
+                    elif roll == 1:
+                        self.rolls.append(str(roll))
+                        natural1 = True
+                    else:
+                        self.rolls.append(str(roll))
+            elif i == 1:
+                self.modifier = arg
+            elif i == 2:
+                self.total = arg
+
+        await ctx.send(self.output(natural20, natural1))
         self.reset()
 
 
