@@ -1,6 +1,9 @@
 import discord
 from discord.ext import commands
 import random
+import setup
+
+logger = setup.logging.getLogger("bot")
 
 
 class Roll(commands.Cog):
@@ -66,9 +69,10 @@ class Roll(commands.Cog):
 
             await ctx.send(self.output())
             self.reset()
-        except ValueError:
+        except ValueError as e:
             self.reset()
             await ctx.send("```Invalid arguments, please try again.```")
+            logger.exception(e)
 
     def d20(self, input):
         try:
@@ -90,8 +94,9 @@ class Roll(commands.Cog):
                     total = total + modifier
 
             return [dice, modifier, total]
-        except ValueError:
+        except ValueError as e:
             self.reset()
+            logger.exception(e)
             return ValueError
 
     @commands.command()
@@ -119,9 +124,10 @@ class Roll(commands.Cog):
 
             await ctx.send(self.output(natural20, natural1))
             self.reset()
-        except (ValueError, TypeError):
+        except (ValueError, TypeError) as e:
             self.reset()
             await ctx.send("```Invalid arguments, please try again.```")
+            logger.exception(e)
 
 
 async def setup(bot):
