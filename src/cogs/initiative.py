@@ -100,6 +100,22 @@ class Initiative(commands.Cog):
             await ctx.send("```Please start the initiative.```")
 
     @init.command()
+    async def insert(self, ctx, *args):
+        if self.on:
+            try:
+                self.list.update({args[0]: int(args[1])})
+                self.sort()
+                self.update()
+                await ctx.send(
+                    f"```{args[0]} has been added to the initiative count.```"
+                )
+            except (ValueError, TypeError) as e:
+                await ctx.send("```Invalid arguments, please try again.```")
+                logger.exception(e)
+        else:
+            await ctx.send("```Please start the initiative.```")
+
+    @init.command()
     async def remove(self, ctx, *args):
         if self.on:
             try:
