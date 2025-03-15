@@ -67,6 +67,7 @@ class Roll(commands.Cog):
             await ctx.send(self.output())
             self.reset()
         except ValueError:
+            self.reset()
             await ctx.send("```Invalid arguments, please try again.```")
 
     def d20(self, input):
@@ -90,6 +91,7 @@ class Roll(commands.Cog):
 
             return [dice, modifier, total]
         except ValueError:
+            self.reset()
             return ValueError
 
     @commands.command()
@@ -117,7 +119,8 @@ class Roll(commands.Cog):
 
             await ctx.send(self.output(natural20, natural1))
             self.reset()
-        except ValueError:
+        except (ValueError, TypeError):
+            self.reset()
             await ctx.send("```Invalid arguments, please try again.```")
 
 
