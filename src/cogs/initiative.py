@@ -1,6 +1,9 @@
 import discord
 from discord.ext import commands
 import datetime
+import setup
+
+logger = setup.logging.getLogger("bot")
 
 
 class Initiative(commands.Cog):
@@ -90,8 +93,9 @@ class Initiative(commands.Cog):
                         await ctx.send(
                             f"**Rolls:** [ {', '.join(map(str, rolls[0]))} ] {rolls[1]:=+3}\n**Total:** {rolls[2]}"
                         )
-                except (ValueError, TypeError):
+                except (ValueError, TypeError) as e:
                     await ctx.send("```Invalid arguments, please try again.```")
+                    logger.exception(e)
         else:
             await ctx.send("```Please start the initiative.```")
 
@@ -102,10 +106,11 @@ class Initiative(commands.Cog):
                 self.list.pop(args[0])
                 self.update()
                 await ctx.send(embed=self.embed)
-            except KeyError:
+            except KeyError as e:
                 await ctx.send(
                     f"```{args[0]} is not in the initiative order.```"
                 )
+                logger.exception(e)
         else:
             await ctx.send("```Please start the initiative.```")
 
@@ -116,8 +121,11 @@ class Initiative(commands.Cog):
                 self.list[args[1]] = self.list.pop(args[0])
                 self.update()
                 await ctx.send(embed=self.embed)
-            except KeyError:
-                await ctx.send(f'"{args[0]}" is not in the initiative order.')
+            except KeyError as e:
+                await ctx.send(
+                    f'```"{args[0]}" is not in the initiative order.```'
+                )
+                logger.exception(e)
         else:
             await ctx.send("```Please start the initiative.```")
 
