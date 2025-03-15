@@ -20,6 +20,7 @@ class Help(commands.Cog):
             .init add [Name] {Modifier} {Adv/Dis}       # Rolls initiative and adds character to initiative count. 
                                                             e.g. '.init add Yves +5', '.init add Vinco +11 adv'
             .init remove [Name]                         # Removes character from initiative count. Name must match exactly.
+            .init insert [Name] [Value]                 # Adds character to initiative count with a predetermined value.
             .init change [Name] [New Name]              # Changes the name of a character on the initiative count while keeping the score.
             .init increment                             # Increases the round counter by 1.
             .init list                                  # Prints out the current initiative count and round count.
