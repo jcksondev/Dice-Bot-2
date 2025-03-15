@@ -9,6 +9,7 @@ class Roll(commands.Cog):
         self.rolls = []
         self.total = 0
         self.modifier = 0
+        self.on = False
 
     def parse(self, args: tuple):
         return (
@@ -40,75 +41,84 @@ class Roll(commands.Cog):
 
     @commands.command()
     async def r(self, ctx, *args):
-        input = self.parse(args)
+        try:
+            input = self.parse(args)
 
-        for i, arg in enumerate(input):
-            if "d" in arg:
-                arg = arg.split("d")
-                if arg[0] == "":
-                    arg[0] = 1
+            for i, arg in enumerate(input):
+                if "d" in arg:
+                    arg = arg.split("d")
+                    if arg[0] == "":
+                        arg[0] = 1
 
-                for _ in range(int(arg[0])):
-                    roll = random.randint(1, int(arg[1]))
-                    if roll == int(arg[1]):
-                        self.rolls.append(f"**{str(roll)}**")
-                    else:
-                        self.rolls.append(str(roll))
+                    for _ in range(int(arg[0])):
+                        roll = random.randint(1, int(arg[1]))
+                        if roll == int(arg[1]):
+                            self.rolls.append(f"**{str(roll)}**")
+                        else:
+                            self.rolls.append(str(roll))
+                        self.total = self.total + roll
+                elif "+" in arg or "-" in arg:
+                    continue
+                else:
+                    roll = int("".join([input[i - 1], input[i]]))
+                    self.modifier = roll
                     self.total = self.total + roll
-            elif "+" in arg or "-" in arg:
-                continue
-            else:
-                roll = int("".join([input[i - 1], input[i]]))
-                self.modifier = roll
-                self.total = self.total + roll
 
-        await ctx.send(self.output())
-        self.reset()
+            await ctx.send(self.output())
+            self.reset()
+        except ValueError:
+            await ctx.send("```Invalid arguments, please try again.```")
 
     def d20(self, input):
-        dice = [random.randint(1, 20)]
-        total = dice[0]
-        modifier = 0
+        try:
+            dice = [random.randint(1, 20)]
+            total = dice[0]
+            modifier = 0
 
-        for i, arg in enumerate(input):
-            if "adv" in arg:
-                dice.append(random.randint(1, 20))
-                total = max(dice) + modifier
-            elif "dis" in arg:
-                dice.append(random.randint(1, 20))
-                total = min(dice) + modifier
-            elif "+" in arg or "-" in arg:
-                continue
-            else:
-                modifier = int("".join([input[i - 1], input[i]]))
-                total = total + modifier
+            for i, arg in enumerate(input):
+                if "adv" in arg:
+                    dice.append(random.randint(1, 20))
+                    total = max(dice) + modifier
+                elif "dis" in arg:
+                    dice.append(random.randint(1, 20))
+                    total = min(dice) + modifier
+                elif "+" in arg or "-" in arg:
+                    continue
+                else:
+                    modifier = int("".join([input[i - 1], input[i]]))
+                    total = total + modifier
 
-        return [dice, modifier, total]
+            return [dice, modifier, total]
+        except ValueError:
+            return ValueError
 
     @commands.command()
     async def rr(self, ctx, *args):
-        rolls = self.d20(self.parse(args))
-        natural20 = False
-        natural1 = False
+        try:
+            rolls = self.d20(self.parse(args))
+            natural20 = False
+            natural1 = False
 
-        for i, arg in enumerate(rolls):
-            if i == 0:
-                for _, roll in enumerate(arg):
-                    if roll == 20:
-                        self.rolls.append(f"**{str(roll)}**")
-                        natural20 = True
-                    elif roll == 1:
-                        self.rolls.append(str(roll))
-                        natural1 = True
-                    else:
-                        self.rolls.append(str(roll))
-            elif i == 1:
-                self.modifier = arg
-            elif i == 2:
-                self.total = arg
+            for i, arg in enumerate(rolls):
+                if i == 0:
+                    for _, roll in enumerate(arg):
+                        if roll == 20:
+                            self.rolls.append(f"**{str(roll)}**")
+                            natural20 = True
+                        elif roll == 1:
+                            self.rolls.append(str(roll))
+                            natural1 = True
+                        else:
+                            self.rolls.append(str(roll))
+                elif i == 1:
+                    self.modifier = arg
+                elif i == 2:
+                    self.total = arg
 
-        await ctx.send(self.output(natural20, natural1))
-        self.reset()
+            await ctx.send(self.output(natural20, natural1))
+            self.reset()
+        except ValueError:
+            await ctx.send("```Invalid arguments, please try again.```")
 
 
 async def setup(bot):
