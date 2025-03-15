@@ -1,13 +1,19 @@
 import discord
 from discord.ext import commands
+import datetime
 
 
 class Initiative(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.list = {}
-        self.pointer = 0
-        self.round = 0
+        self.round = 1
+        self.embed = discord.Embed(
+            color=0x5D3FD3,
+            title="Initiative List",
+            description="Refer to the help command for instructions.",
+            timestamp=datetime.datetime.now(),
+        )
 
     def sort(self):
         self.list = {
@@ -17,6 +23,11 @@ class Initiative(commands.Cog):
             )
         }
 
+    def update(self):
+        self.embed.clear_fields()
+        for k, v in self.list.items():
+            self.embed.add_field(name=k, value=v, inline=False)
+
     @commands.group()
     async def init(self, ctx):
         if ctx.invoked_subcommand is None:
@@ -24,11 +35,21 @@ class Initiative(commands.Cog):
 
     @init.command()
     async def start(self, ctx):
-        await ctx.send("Initiative started.")
+        self.embed.clear_fields()
+        self.embed.set_thumbnail(url=str(self.bot.user.avatar))
+        await ctx.send(embed=self.embed)
 
     @init.command()
     async def end(self, ctx):
-        await ctx.send("Initiative cleared.")
+        self.embed.clear_fields()
+        self.embed.add_field(
+            name=f"Initiative lasted a total of {self.round} rounds!",
+            value="",
+            inline=False,
+        )
+        await ctx.send(embed=self.embed)
+        self.round = 1
+        self.list = {}
 
     @init.command()
     async def add(self, ctx, *args):
@@ -39,7 +60,8 @@ class Initiative(commands.Cog):
             rolls = ROLL.d20(input)
             self.list.update({name: rolls[-1]})
             self.sort()
-            await ctx.send(self.list.items())
+            self.update()
+            await ctx.send(embed=self.embed)
 
     @init.command()
     async def remove(self, ctx, *args):
@@ -56,6 +78,14 @@ class Initiative(commands.Cog):
             await ctx.send(self.list.items())
         except KeyError:
             await ctx.send(f'"{args[0]}" is not in the initiative order.')
+
+    @init.command()
+    async def increment(self, ctx):
+        self.round = self.round + 1
+
+    @init.command()
+    async def list(self, ctx):
+        await ctx.send(embed=self.embed)
 
 
 async def setup(bot):
